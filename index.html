@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>渠道机器人管理 - 员工账号配置原型</title>
+  <style>
+    :root {
+      --primary: #2f6bff;
+      --primary-hover: #2458d9;
+      --text: #1f2329;
+      --text-secondary: #646a73;
+      --text-tertiary: #8f959e;
+      --line: #dee0e3;
+      --line-soft: #eff0f1;
+      --surface: #fff;
+      --surface-soft: #f7f8fa;
+      --success: #00a870;
+      --danger: #d54941;
+      --warning-bg: #fff8eb;
+      --warning-line: #ffe2a8;
+      --shadow: 0 24px 72px rgba(31, 35, 41, .18), 0 4px 16px rgba(31, 35, 41, .08);
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--text); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    #basePage { width: 100%; height: 100%; border: 0; display: block; background: #f5f6f7; }
+
+    .fallback-entry {
+      position: fixed; z-index: 9; top: 128px; right: 32px; height: 32px; padding: 0 16px;
+      border: 1px solid #a9c2ff; border-radius: 4px; background: #fff; color: var(--primary);
+      box-shadow: 0 2px 6px rgba(31, 35, 41, .08); font-size: 14px;
+    }
+    .fallback-entry:hover { color: var(--primary-hover); border-color: var(--primary); background: #f5f8ff; }
+
+    .overlay {
+      position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center;
+      padding: 32px; background: rgba(15, 23, 42, .42); backdrop-filter: blur(2px);
+      opacity: 0; visibility: hidden; transition: opacity .18s ease, visibility .18s ease;
+    }
+    .overlay.open { opacity: 1; visibility: visible; }
+    .dialog {
+      width: min(920px, calc(100vw - 64px)); max-height: min(760px, calc(100vh - 64px));
+      display: flex; flex-direction: column; overflow: hidden; border-radius: 8px; background: var(--surface);
+      box-shadow: var(--shadow); transform: translateY(12px) scale(.985); transition: transform .2s ease;
+    }
+    .overlay.open .dialog { transform: translateY(0) scale(1); }
+    .dialog-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 22px 24px 18px; border-bottom: 1px solid var(--line-soft); }
+    .dialog-title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 600; }
+    .dialog-subtitle { margin: 5px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 20px; }
+    .icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 4px; color: var(--text-secondary); background: transparent; }
+    .icon-btn:hover { color: var(--text); background: var(--surface-soft); }
+    .dialog-body { min-height: 0; overflow: auto; padding: 20px 24px 24px; }
+
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 12px; }
+    .count { color: var(--text-secondary); font-size: 13px; }
+    .count b { color: var(--text); font-weight: 600; }
+    .auto-note { margin-left: 10px; padding-left: 10px; border-left: 1px solid var(--line); color: var(--text-tertiary); font-size: 12px; }
+    .toolbar-actions { display: flex; gap: 10px; }
+    .btn { height: 32px; padding: 0 15px; border-radius: 4px; border: 1px solid var(--line); color: var(--text); background: white; font-size: 13px; }
+    .btn:hover { border-color: #91afff; color: var(--primary); }
+    .btn-primary { border-color: var(--primary); color: white; background: var(--primary); }
+    .btn-primary:hover { color: white; border-color: var(--primary-hover); background: var(--primary-hover); }
+    .btn-text { height: auto; padding: 2px 0; border: 0; color: var(--primary); background: transparent; }
+    .btn-danger { color: var(--danger); }
+    .btn-text:hover { border: 0; text-decoration: underline; }
+    .btn-text + .btn-text { margin-left: 14px; }
+
+    .add-panel { display: none; margin-bottom: 14px; padding: 16px; border: 1px solid #cbd9ff; border-radius: 6px; background: #f7f9ff; }
+    .add-panel.open { display: block; animation: panel-in .18s ease; }
+    @keyframes panel-in { from { opacity: 0; transform: translateY(-5px); } }
+    .add-title { margin-bottom: 14px; font-size: 14px; font-weight: 600; }
+    .form-grid { display: grid; grid-template-columns: 1fr 34px 1fr auto; align-items: end; gap: 12px; }
+    .form-item label { display: block; margin-bottom: 7px; color: var(--text-secondary); font-size: 12px; }
+    .required::before { content: "*"; margin-right: 3px; color: var(--danger); }
+    .field { width: 100%; height: 34px; padding: 0 34px 0 10px; border: 1px solid var(--line); border-radius: 4px; outline: 0; color: var(--text); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m2.5 4.5 3.5 3 3.5-3' fill='none' stroke='%23646a73' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 11px center; }
+    .field:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(47,107,255,.08); }
+    .link-arrow { align-self: center; margin-top: 18px; color: var(--text-tertiary); text-align: center; }
+    .form-actions { display: flex; gap: 8px; }
+    .form-hint { margin-top: 10px; color: var(--text-tertiary); font-size: 12px; }
+
+    .table-wrap { overflow: hidden; border: 1px solid var(--line); border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th { height: 42px; padding: 0 14px; color: var(--text-secondary); background: var(--surface-soft); font-size: 12px; font-weight: 500; text-align: left; }
+    td { height: 58px; padding: 8px 14px; border-top: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
+    tbody tr:hover { background: #fafbfc; }
+    .account { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .avatar { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 50%; color: white; background: linear-gradient(145deg, #33c46e, #149e52); font-size: 12px; font-weight: 600; }
+    .avatar.system { background: linear-gradient(145deg, #5f8dff, #315fd7); }
+    .account-copy { min-width: 0; }
+    .account-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .account-id { margin-top: 2px; overflow: hidden; color: var(--text-tertiary); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .mapping-line { color: #c1c5ca; }
+    .tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 3px; color: var(--success); background: #eaf8f2; font-size: 12px; }
+    .tag.warning { color: #d17b00; background: #fff3df; }
+    .empty { display: none; padding: 50px 0; color: var(--text-tertiary); font-size: 13px; text-align: center; }
+    .empty.show { display: block; }
+    .empty svg { display: block; margin: 0 auto 10px; color: #c7cbd1; }
+    .dialog-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--line-soft); background: #fff; }
+
+    .confirm { position: fixed; inset: 0; z-index: 1100; display: none; place-items: center; background: rgba(15,23,42,.28); }
+    .confirm.open { display: grid; }
+    .confirm-card { width: 420px; padding: 22px; border-radius: 8px; background: white; box-shadow: var(--shadow); }
+    .confirm-title { margin: 0 0 8px; font-size: 16px; }
+    .confirm-text { margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 21px; }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .toast { position: fixed; z-index: 1200; top: 26px; left: 50%; display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid #ccebdd; border-radius: 6px; color: #237b55; background: #f2fbf7; box-shadow: 0 8px 24px rgba(31,35,41,.12); font-size: 13px; opacity: 0; pointer-events: none; transform: translate(-50%, -12px); transition: .2s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.warn { border-color: var(--warning-line); color: #9c6200; background: var(--warning-bg); }
+
+    @media (max-width: 760px) {
+      .overlay { padding: 12px; }
+      .dialog { width: 100%; max-height: calc(100vh - 24px); }
+      .form-grid { grid-template-columns: 1fr; }
+      .link-arrow { display: none; }
+      th:nth-child(3), td:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <iframe id="basePage" title="渠道机器人管理原页面" src="渠道机器人管理-员工账号配置原型-底稿.html"></iframe>
+  <button class="fallback-entry" id="fallbackEntry">配置员工账号</button>
+
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+      <header class="dialog-header">
+        <div>
+          <h1 class="dialog-title" id="dialogTitle">配置员工账号</h1>
+          <p class="dialog-subtitle">建立微信账号与系统后台账号的对应关系，用于明确渠道机器人的负责人。</p>
+        </div>
+        <button class="icon-btn close-dialog" aria-label="关闭弹窗">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+
+      <div class="dialog-body">
+        <div class="toolbar">
+          <div class="count">已配置 <b id="mappingCount">3</b> 条映射<span class="auto-note">离职员工映射由系统自动清理</span></div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary" id="showAdd">+  添加账号映射</button>
+          </div>
+        </div>
+
+        <div class="add-panel" id="addPanel">
+          <div class="add-title">新增对应关系</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="required" for="wxAccount">微信账号</label>
+              <input class="field" id="wxAccount" list="wxOptions" autocomplete="off" placeholder="输入名称或微信号筛选">
+              <datalist id="wxOptions">
+                <option value="待映射微信 A（wxid_demo_201）"></option>
+                <option value="待映射微信 B（手机尾号 0002）"></option>
+              </datalist>
+            </div>
+            <div class="link-arrow">→</div>
+            <div class="form-item">
+              <label class="required" for="systemAccount">系统后台账号</label>
+              <input class="field" id="systemAccount" list="systemOptions" autocomplete="off" placeholder="输入姓名或后台账号筛选">
+              <datalist id="systemOptions">
+                <option value="示例员工 D（账号 demo_d·渠道运营）"></option>
+                <option value="示例员工 E（账号 demo_e·商务运营）"></option>
+              </datalist>
+            </div>
+            <div class="form-actions">
+              <button class="btn" id="cancelAdd">取消</button>
+              <button class="btn btn-primary" id="confirmAdd">添加</button>
+            </div>
+          </div>
+          <div class="form-hint">仅显示未建立映射的微信账号和状态正常的后台员工账号。</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <colgroup><col style="width:29%"><col style="width:5%"><col style="width:29%"><col style="width:15%"><col style="width:22%"></colgroup>
+            <thead><tr><th>微信账号</th><th></th><th>系统后台账号</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="mappingRows">
+              <tr data-employee="示例员工 A">
+                <td><div class="account"><span class="avatar">A</span><div class="account-copy"><div class="account-name">微信演示号 A</div><div class="account-id">wxid_demo_101</div></div></div></td>
+                <td class="mapping-line">→</td>
+                <td><div class="account"><span class="avatar system">A</span><div class="account-copy"><div class="account-name">示例员工 A</div><div class="account-id">业务一部 · 渠道运营</div></div></div></td>
+                <td><span class="tag">正常</span></td>
+                <td><button class="btn btn-text btn-danger delete-row">删除</button></td>
+              </tr>
+              <tr data-employee="示例员工 B">
+                <td><div class="account"><span class="avatar">B</span><div class="account-copy"><div class="account-name">微信演示号 B</div><div class="account-id">手机尾号 0002</div></div></div></td>
+                <td class="mapping-line">→</td>
+                <td><div class="account"><span class="avatar system">B</span><div class="account-copy"><div class="account-name">示例员工 B</div><div class="account-id">业务二部 · 商务运营</div></div></div></td>
+                <td><span class="tag">正常</span></td>
+                <td><button class="btn btn-text btn-danger delete-row">删除</button></td>
+              </tr>
+              <tr data-employee="示例员工 C">
+                <td><div class="account"><span class="avatar">C</span><div class="account-copy"><div class="account-name">微信演示号 C</div><div class="account-id">wxid_demo_103</div></div></div></td>
+                <td class="mapping-line">→</td>
+                <td><div class="account"><span class="avatar system">C</span><div class="account-copy"><div class="account-name">示例员工 C</div><div class="account-id">业务三部 · 投放运营</div></div></div></td>
+                <td><span class="tag">正常</span></td>
+                <td><button class="btn btn-text btn-danger delete-row">删除</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="empty" id="emptyState">
+            <svg width="42" height="42" viewBox="0 0 48 48" fill="none"><rect x="8" y="10" width="32" height="28" rx="4" stroke="currentColor" stroke-width="2"/><path d="M15 19h18M15 26h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            暂无账号映射，点击“添加账号映射”开始配置
+          </div>
+        </div>
+      </div>
+
+      <footer class="dialog-footer">
+        <button class="btn close-dialog">关闭</button>
+      </footer>
+    </section>
+  </div>
+
+  <div class="confirm" id="confirmLayer">
+    <div class="confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <h2 class="confirm-title" id="confirmTitle">删除账号映射？</h2>
+      <p class="confirm-text" id="confirmText"></p>
+      <div class="confirm-actions"><button class="btn" id="cancelDelete">取消</button><button class="btn btn-primary" id="confirmDelete">确认删除</button></div>
+    </div>
+  </div>
+  <div class="toast" id="toast">✓ <span id="toastText"></span></div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const addPanel = document.getElementById('addPanel');
+    const rows = document.getElementById('mappingRows');
+    const count = document.getElementById('mappingCount');
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toastText');
+    const confirmLayer = document.getElementById('confirmLayer');
+    let pendingDelete = null;
+
+    function openDialog() {
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      setTimeout(() => document.getElementById('showAdd').focus(), 80);
+    }
+    function closeDialog() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      addPanel.classList.remove('open');
+    }
+    function showToast(message, warning = false) {
+      toastText.textContent = message;
+      toast.classList.toggle('warn', warning);
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+    function refreshCount() {
+      const total = rows.querySelectorAll('tr').length;
+      count.textContent = total;
+      document.getElementById('emptyState').classList.toggle('show', total === 0);
+    }
+
+    document.getElementById('fallbackEntry').addEventListener('click', openDialog);
+    document.querySelectorAll('.close-dialog').forEach(btn => btn.addEventListener('click', closeDialog));
+    overlay.addEventListener('mousedown', e => { if (e.target === overlay) closeDialog(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { confirmLayer.classList.remove('open'); closeDialog(); } });
+    document.getElementById('showAdd').addEventListener('click', () => {
+      addPanel.classList.add('open');
+      document.getElementById('wxAccount').focus();
+    });
+    document.getElementById('cancelAdd').addEventListener('click', () => addPanel.classList.remove('open'));
+    const wxAccounts = new Map([
+      ['待映射微信 A（wxid_demo_201）', ['待映射微信 A', 'wxid_demo_201']],
+      ['待映射微信 B（手机尾号 0002）', ['待映射微信 B', '手机尾号 0002']]
+    ]);
+    const systemAccounts = new Map([
+      ['示例员工 D（账号 demo_d·渠道运营）', ['示例员工 D', '账号 demo_d·渠道运营']],
+      ['示例员工 E（账号 demo_e·商务运营）', ['示例员工 E', '账号 demo_e·商务运营']]
+    ]);
+    document.getElementById('confirmAdd').addEventListener('click', () => {
+      const wx = document.getElementById('wxAccount');
+      const sys = document.getElementById('systemAccount');
+      if (!wx.value || !sys.value) { showToast('请先选择微信账号和后台账号', true); return; }
+      if (!wxAccounts.has(wx.value) || !systemAccounts.has(sys.value)) { showToast('请从筛选结果中选中有效账号', true); return; }
+      const [wxName, wxId] = wxAccounts.get(wx.value);
+      const [employee, role] = systemAccounts.get(sys.value);
+      const tr = document.createElement('tr');
+      tr.dataset.employee = employee;
+      tr.innerHTML = `<td><div class="account"><span class="avatar">${wxName.slice(0,1)}</span><div class="account-copy"><div class="account-name">${wxName}</div><div class="account-id">${wxId}</div></div></div></td><td class="mapping-line">→</td><td><div class="account"><span class="avatar system">${employee.slice(0,1)}</span><div class="account-copy"><div class="account-name">${employee}</div><div class="account-id">${role}</div></div></div></td><td><span class="tag">正常</span></td><td><button class="btn btn-text btn-danger delete-row">删除</button></td>`;
+      rows.prepend(tr);
+      wx.value = ''; sys.value = '';
+      addPanel.classList.remove('open');
+      refreshCount();
+      showToast(`已添加 ${wxName} → ${employee}`);
+    });
+    rows.addEventListener('click', e => {
+      const tr = e.target.closest('tr');
+      if (!tr) return;
+      if (e.target.closest('.delete-row')) {
+        pendingDelete = tr;
+        document.getElementById('confirmText').textContent = `删除后，${tr.dataset.employee}将不再与当前微信账号关联。此操作不会删除微信账号或系统账号本身。`;
+        confirmLayer.classList.add('open');
+      }
+    });
+    document.getElementById('cancelDelete').addEventListener('click', () => { pendingDelete = null; confirmLayer.classList.remove('open'); });
+    document.getElementById('confirmDelete').addEventListener('click', () => {
+      if (!pendingDelete) return;
+      const name = pendingDelete.dataset.employee;
+      pendingDelete.remove(); pendingDelete = null;
+      confirmLayer.classList.remove('open'); refreshCount(); showToast(`已删除 ${name} 的账号映射`);
+    });
+    // 尝试把入口放到原页面的“添加机器人”旁边；如果浏览器限制本地 iframe 访问，则保留右上角的备用入口。
+    document.getElementById('basePage').addEventListener('load', function () {
+      try {
+        const doc = this.contentDocument;
+        const addRobot = [...doc.querySelectorAll('button')].find(btn => btn.textContent.trim() === '添加机器人');
+        if (!addRobot || doc.getElementById('employeeMappingEntry')) return;
+        const entry = addRobot.cloneNode(true);
+        entry.id = 'employeeMappingEntry';
+        entry.querySelector('span').textContent = '配置员工账号';
+        entry.style.marginLeft = '10px';
+        entry.addEventListener('click', openDialog);
+        addRobot.parentElement.appendChild(entry);
+        document.getElementById('fallbackEntry').style.display = 'none';
+      } catch (err) {
+        console.info('使用备用配置入口');
+      }
+    });
+  </script>
+</body>
+</html>
