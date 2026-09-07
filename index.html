@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>渠道机器人管理 - 回款口令权限原型</title>
+  <title>渠道机器人管理 - 员工账号配置原型</title>
   <style>
     :root {
       --primary: #2f6bff;
@@ -52,21 +52,6 @@
     .icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 4px; color: var(--text-secondary); background: transparent; }
     .icon-btn:hover { color: var(--text); background: var(--surface-soft); }
     .dialog-body { min-height: 0; overflow: auto; padding: 20px 24px 24px; }
-
-    .scope-section { margin-bottom: 20px; }
-    .section-label { margin-bottom: 10px; font-size: 14px; font-weight: 600; }
-    .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .scope-option { min-height: 84px; display: flex; align-items: flex-start; gap: 11px; padding: 15px 16px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: #fff; text-align: left; transition: border-color .16s, background .16s, box-shadow .16s; }
-    .scope-option:hover { border-color: #91afff; }
-    .scope-option.selected { border-color: var(--primary); background: #f5f8ff; box-shadow: inset 0 0 0 1px var(--primary); }
-    .scope-radio { width: 16px; height: 16px; flex: none; margin-top: 2px; border: 1px solid #bbbfc4; border-radius: 50%; background: #fff; }
-    .scope-option.selected .scope-radio { border: 5px solid var(--primary); }
-    .scope-copy { min-width: 0; }
-    .scope-title { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; }
-    .scope-desc { display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px; line-height: 18px; font-weight: 400; }
-    .recommend { padding: 1px 6px; border-radius: 3px; color: var(--primary); background: #eaf0ff; font-size: 11px; font-weight: 500; }
-    .policy-notice { margin-top: 10px; padding: 9px 12px; border-left: 3px solid #f5a623; color: #7a4e00; background: var(--warning-bg); font-size: 12px; line-height: 18px; }
-    .policy-notice.allow { border-left-color: var(--success); color: #237b55; background: #f2fbf7; }
 
     .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 12px; }
     .count { color: var(--text-secondary); font-size: 13px; }
@@ -135,14 +120,14 @@
 </head>
 <body>
   <iframe id="basePage" title="渠道机器人管理原页面" src="渠道机器人管理-员工账号配置原型-底稿.html"></iframe>
-  <button class="fallback-entry" id="fallbackEntry">回款口令权限</button>
+  <button class="fallback-entry" id="fallbackEntry">配置员工账号</button>
 
   <div class="overlay" id="overlay" aria-hidden="true">
     <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
       <header class="dialog-header">
         <div>
-          <h1 class="dialog-title" id="dialogTitle">配置回款口令权限</h1>
-          <p class="dialog-subtitle">设置本群哪些身份可以发送回款口令；未获授权的口令将被机器人忽略。</p>
+          <h1 class="dialog-title" id="dialogTitle">配置员工账号</h1>
+          <p class="dialog-subtitle">建立微信账号与系统后台账号的对应关系，用于明确渠道机器人的负责人。</p>
         </div>
         <button class="icon-btn close-dialog" aria-label="关闭弹窗">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -150,29 +135,15 @@
       </header>
 
       <div class="dialog-body">
-        <section class="scope-section">
-          <div class="section-label">口令发送范围</div>
-          <div class="scope-grid" role="radiogroup" aria-label="回款口令发送范围">
-            <button class="scope-option selected" type="button" role="radio" aria-checked="true" data-scope="staff">
-              <span class="scope-radio"></span>
-              <span class="scope-copy"><span class="scope-title">仅媒介人员 <span class="recommend">建议</span></span><span class="scope-desc">仅下方已授权的媒介人员可以发送；客户发送的回款口令不会生效。</span></span>
-            </button>
-            <button class="scope-option" type="button" role="radio" aria-checked="false" data-scope="all">
-              <span class="scope-radio"></span>
-              <span class="scope-copy"><span class="scope-title">客户及媒介人员</span><span class="scope-desc">群内客户和下方已授权的媒介人员都可以发送有效回款口令。</span></span>
-            </button>
-          </div>
-          <div class="policy-notice" id="policyNotice">当前仅允许媒介人员发送。客户发送的回款口令将被忽略，不会生成回款记录。</div>
-        </section>
         <div class="toolbar">
-          <div class="count">已授权 <b id="mappingCount">3</b> 名媒介人员<span class="auto-note">离职员工权限由系统自动回收</span></div>
+          <div class="count">已配置 <b id="mappingCount">3</b> 条映射<span class="auto-note">离职员工映射由系统自动清理</span></div>
           <div class="toolbar-actions">
-            <button class="btn btn-primary" id="showAdd">+  添加媒介人员</button>
+            <button class="btn btn-primary" id="showAdd">+  添加账号映射</button>
           </div>
         </div>
 
         <div class="add-panel" id="addPanel">
-          <div class="add-title">新增媒介人员权限</div>
+          <div class="add-title">新增对应关系</div>
           <div class="form-grid">
             <div class="form-item">
               <label class="required" for="wxAccount">微信账号</label>
@@ -202,34 +173,34 @@
         <div class="table-wrap">
           <table>
             <colgroup><col style="width:29%"><col style="width:5%"><col style="width:29%"><col style="width:15%"><col style="width:22%"></colgroup>
-            <thead><tr><th>微信账号</th><th></th><th>系统后台账号</th><th>权限状态</th><th>操作</th></tr></thead>
+            <thead><tr><th>微信账号</th><th></th><th>系统后台账号</th><th>状态</th><th>操作</th></tr></thead>
             <tbody id="mappingRows">
               <tr data-employee="示例员工 A">
                 <td><div class="account"><span class="avatar">A</span><div class="account-copy"><div class="account-name">微信演示号 A</div><div class="account-id">wxid_demo_101</div></div></div></td>
                 <td class="mapping-line">→</td>
                 <td><div class="account"><span class="avatar system">A</span><div class="account-copy"><div class="account-name">示例员工 A</div><div class="account-id">业务一部 · 渠道运营</div></div></div></td>
-                <td><span class="tag">已授权</span></td>
-                <td><button class="btn btn-text btn-danger delete-row">移除</button></td>
+                <td><span class="tag">正常</span></td>
+                <td><button class="btn btn-text btn-danger delete-row">删除</button></td>
               </tr>
               <tr data-employee="示例员工 B">
                 <td><div class="account"><span class="avatar">B</span><div class="account-copy"><div class="account-name">微信演示号 B</div><div class="account-id">手机尾号 0002</div></div></div></td>
                 <td class="mapping-line">→</td>
                 <td><div class="account"><span class="avatar system">B</span><div class="account-copy"><div class="account-name">示例员工 B</div><div class="account-id">业务二部 · 商务运营</div></div></div></td>
-                <td><span class="tag">已授权</span></td>
-                <td><button class="btn btn-text btn-danger delete-row">移除</button></td>
+                <td><span class="tag">正常</span></td>
+                <td><button class="btn btn-text btn-danger delete-row">删除</button></td>
               </tr>
               <tr data-employee="示例员工 C">
                 <td><div class="account"><span class="avatar">C</span><div class="account-copy"><div class="account-name">微信演示号 C</div><div class="account-id">wxid_demo_103</div></div></div></td>
                 <td class="mapping-line">→</td>
                 <td><div class="account"><span class="avatar system">C</span><div class="account-copy"><div class="account-name">示例员工 C</div><div class="account-id">业务三部 · 投放运营</div></div></div></td>
-                <td><span class="tag">已授权</span></td>
-                <td><button class="btn btn-text btn-danger delete-row">移除</button></td>
+                <td><span class="tag">正常</span></td>
+                <td><button class="btn btn-text btn-danger delete-row">删除</button></td>
               </tr>
             </tbody>
           </table>
           <div class="empty" id="emptyState">
             <svg width="42" height="42" viewBox="0 0 48 48" fill="none"><rect x="8" y="10" width="32" height="28" rx="4" stroke="currentColor" stroke-width="2"/><path d="M15 19h18M15 26h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            暂无已授权媒介人员，点击“添加媒介人员”开始配置
+            暂无账号映射，点击“添加账号映射”开始配置
           </div>
         </div>
       </div>
@@ -242,9 +213,9 @@
 
   <div class="confirm" id="confirmLayer">
     <div class="confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
-      <h2 class="confirm-title" id="confirmTitle">移除媒介人员权限？</h2>
+      <h2 class="confirm-title" id="confirmTitle">删除账号映射？</h2>
       <p class="confirm-text" id="confirmText"></p>
-      <div class="confirm-actions"><button class="btn" id="cancelDelete">取消</button><button class="btn btn-primary" id="confirmDelete">确认移除</button></div>
+      <div class="confirm-actions"><button class="btn" id="cancelDelete">取消</button><button class="btn btn-primary" id="confirmDelete">确认删除</button></div>
     </div>
   </div>
   <div class="toast" id="toast">✓ <span id="toastText"></span></div>
@@ -286,20 +257,6 @@
     document.querySelectorAll('.close-dialog').forEach(btn => btn.addEventListener('click', closeDialog));
     overlay.addEventListener('mousedown', e => { if (e.target === overlay) closeDialog(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') { confirmLayer.classList.remove('open'); closeDialog(); } });
-    document.querySelectorAll('.scope-option').forEach(option => option.addEventListener('click', () => {
-      document.querySelectorAll('.scope-option').forEach(item => {
-        const selected = item === option;
-        item.classList.toggle('selected', selected);
-        item.setAttribute('aria-checked', String(selected));
-      });
-      const allowCustomers = option.dataset.scope === 'all';
-      const notice = document.getElementById('policyNotice');
-      notice.classList.toggle('allow', allowCustomers);
-      notice.textContent = allowCustomers
-        ? '当前允许客户及媒介人员发送。双方发送有效回款口令后，机器人都会处理并生成回款记录。'
-        : '当前仅允许媒介人员发送。客户发送的回款口令将被忽略，不会生成回款记录。';
-      showToast(allowCustomers ? '已允许客户及媒介人员发送回款口令' : '已调整为仅媒介人员可发送回款口令');
-    }));
     document.getElementById('showAdd').addEventListener('click', () => {
       addPanel.classList.add('open');
       document.getElementById('wxAccount').focus();
@@ -322,19 +279,19 @@
       const [employee, role] = systemAccounts.get(sys.value);
       const tr = document.createElement('tr');
       tr.dataset.employee = employee;
-      tr.innerHTML = `<td><div class="account"><span class="avatar">${wxName.slice(0,1)}</span><div class="account-copy"><div class="account-name">${wxName}</div><div class="account-id">${wxId}</div></div></div></td><td class="mapping-line">→</td><td><div class="account"><span class="avatar system">${employee.slice(0,1)}</span><div class="account-copy"><div class="account-name">${employee}</div><div class="account-id">${role}</div></div></div></td><td><span class="tag">已授权</span></td><td><button class="btn btn-text btn-danger delete-row">移除</button></td>`;
+      tr.innerHTML = `<td><div class="account"><span class="avatar">${wxName.slice(0,1)}</span><div class="account-copy"><div class="account-name">${wxName}</div><div class="account-id">${wxId}</div></div></div></td><td class="mapping-line">→</td><td><div class="account"><span class="avatar system">${employee.slice(0,1)}</span><div class="account-copy"><div class="account-name">${employee}</div><div class="account-id">${role}</div></div></div></td><td><span class="tag">正常</span></td><td><button class="btn btn-text btn-danger delete-row">删除</button></td>`;
       rows.prepend(tr);
       wx.value = ''; sys.value = '';
       addPanel.classList.remove('open');
       refreshCount();
-      showToast(`已授权 ${employee} 发送回款口令`);
+      showToast(`已添加 ${wxName} → ${employee}`);
     });
     rows.addEventListener('click', e => {
       const tr = e.target.closest('tr');
       if (!tr) return;
       if (e.target.closest('.delete-row')) {
         pendingDelete = tr;
-        document.getElementById('confirmText').textContent = `移除后，${tr.dataset.employee}通过当前微信账号发送的回款口令将不再生效。此操作不会删除微信账号或系统账号本身。`;
+        document.getElementById('confirmText').textContent = `删除后，${tr.dataset.employee}将不再与当前微信账号关联。此操作不会删除微信账号或系统账号本身。`;
         confirmLayer.classList.add('open');
       }
     });
@@ -343,7 +300,7 @@
       if (!pendingDelete) return;
       const name = pendingDelete.dataset.employee;
       pendingDelete.remove(); pendingDelete = null;
-      confirmLayer.classList.remove('open'); refreshCount(); showToast(`已移除 ${name} 的回款口令权限`);
+      confirmLayer.classList.remove('open'); refreshCount(); showToast(`已删除 ${name} 的账号映射`);
     });
     // 尝试把入口放到原页面的“添加机器人”旁边；如果浏览器限制本地 iframe 访问，则保留右上角的备用入口。
     document.getElementById('basePage').addEventListener('load', function () {
@@ -353,7 +310,7 @@
         if (!addRobot || doc.getElementById('employeeMappingEntry')) return;
         const entry = addRobot.cloneNode(true);
         entry.id = 'employeeMappingEntry';
-        entry.querySelector('span').textContent = '回款口令权限';
+        entry.querySelector('span').textContent = '配置员工账号';
         entry.style.marginLeft = '10px';
         entry.addEventListener('click', openDialog);
         addRobot.parentElement.appendChild(entry);
